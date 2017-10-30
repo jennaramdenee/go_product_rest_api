@@ -5,6 +5,7 @@ import (
   "testing"
   "log"
   "net/http"
+  "net/http/httptest"
   "."
 )
 
@@ -44,7 +45,7 @@ func ensureTableExists() {
 }
 
 func clearTable() {
-  // Remember that a has a DB property for the database, as per struct
+  // Remember that 'a' has a DB property for the database, as per struct
   a.DB.Exec("DELETE FROM products")
   a.DB.Exec("ALTER SEQUENCE products_id_seq RESTART WITH 1")
 }
@@ -53,5 +54,28 @@ func TestEmptyTable(t *testing.T) {
   clearTable()
 
   req, _ := http.NewRequest("GET", "/products", nil)
+  response := executeRequest(req)
 
+  checkResponseCode(t, http.StatusOK, response.Code)
+
+  if body := response.Body.String(); body != "[]" {
+    t.Errorf("Expected an empty array. Got %s", body)
+  }
+}
+
+func executeRequest(req *http.Request) *httptest.ResponseRecorder {
+  rr := httptest.NewRecorder()
+  a.Router.ServeHTTP(rr, req)
+  return rr
+}
+
+func checkResponseCode(t *testing.T, expected, actual int) {
+  if actual != expected {
+    t.Errorf("Expected response code %d. Got %d\n", expected, actual)
+  }
+}
+
+func TestGetNonExistentProduct(t *testing.T) {
+  clearTable()
+  
 }
