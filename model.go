@@ -38,5 +38,24 @@ func (p *product) createProduct(db *sql.DB) error {
 
 // Functions that deal with many products
 func (p *product) getProducts(db *sql.DB, start, count int) ([]product, error) {
-  return nil, errors.New("Not implemented")
+  // Fetch records from the products table, limiting number of records by count, and skipping the number of records defined by start
+  rows, err := db.Query("SELECT id, name, price FROM products LIMIT $1 OFFSET $2", count, start)
+  if err != nil {
+    return nil, err
+  }
+
+  defer rows.Close()
+
+  products := []product{}
+
+  // Next prepares the next result row for reading with the Scan method
+  for rows.Next() {
+    var p product
+    if err := rows.Scan(&p.ID, &p.Name, &p.Price); err != nil {
+      return nil, err
+    }
+    // Create slice of product objects
+    products = append(products, p)
+  }
+  return products, nil
 }
