@@ -6,6 +6,7 @@ import (
   "log"
   "net/http"
   "net/http/httptest"
+  "encoding/json"
   "."
 )
 
@@ -77,5 +78,25 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 
 func TestGetNonExistentProduct(t *testing.T) {
   clearTable()
-  
+
+  req, _ := http.NewRequest("GET", "/product/11", nil)
+  response := executeRequest(req)
+
+  checkResponseCode(t, http.StatusNotFound, response.Code)
+
+  var m map[string]string
+  // Parse JSON data into format of m; stores key value pairs into the map
+  json.Unmarshal(response.Body.Bytes(), &m)
+  if m["error"] != "Product not found" {
+    t.Errorf("Expected the 'error' key of the response to be set to 'Product not found'. Got %s.", m["error"])
+  }
 }
+
+// func TestCreateProduct(t *testing.T) {
+//   clearTable()
+//
+//   payload := []byte(`{ "name": "test product", "price": 11.22 }`)
+//
+//
+//
+// }
