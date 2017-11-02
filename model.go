@@ -3,7 +3,7 @@ package main
 
 import (
   "database/sql"
-  "errors"
+  "strconv"
 )
 
 type product struct {
@@ -29,7 +29,7 @@ func (p *product) deleteProduct(db *sql.DB) error {
 }
 
 func (p *product) createProduct(db *sql.DB) error {
-  _, err := db.QueryRow("INSERT INTO products(name, price) VALUES($1, $2) RETURNING id", p.Name, p.Price).Scan(&p.ID))
+  err := db.QueryRow("INSERT INTO products(name, price) VALUES($1, $2) RETURNING id", p.Name, p.Price).Scan(&p.ID)
   if err != nil {
     return err
   }
@@ -58,4 +58,41 @@ func (p *product) getProducts(db *sql.DB, start, count int) ([]product, error) {
     products = append(products, p)
   }
   return products, nil
+}
+
+// Handler methods
+func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
+  // Get id of the product from requested URL
+  vars := mux.Vars(r)
+  // Atoi is string to int
+  id, err := strconv.Atoi(vars["id"])
+  if err != nil {
+    respondWithError(w, http.StatusBadRequest, "Invalid product ID")
+    return
+  }
+
+  p := product{ ID: id }
+  // Uses the getProduct method defined above
+  if err := p.getProduct(a.DB); err != nil {
+    switch err {
+    case sql.ErrNoRows:
+      respondWithError(w, http.StatusNotFound, "Product not found")
+    default:
+      respondWithError(w, http.StatusInternalServerError, err.Error())
+    }
+    return
+  }
+  respondWithJSON(w, http.StatusOK, p)
+}
+
+func respondWithError(w http.ResponseWriter, code int, message string) {
+  respondWithJSON(w, code, map[string]string{"error": message})
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+  response, _ := json.Marshal(payload)
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(code)
+  w.Write(response)
 }
