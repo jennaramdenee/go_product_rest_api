@@ -56,7 +56,7 @@ func clearTable() {
 func TestEmptyTable(t *testing.T) {
   clearTable()
 
-  req, _ := http.NewRequest("GET", "/product", nil)
+  req, _ := http.NewRequest("GET", "/products", nil)
   response := executeRequest(req)
 
   checkResponseCode(t, http.StatusOK, response.Code)

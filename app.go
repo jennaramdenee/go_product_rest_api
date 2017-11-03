@@ -30,5 +30,14 @@ func (a *App) Initialize(user, password, dbname string) {
   a.Router = mux.NewRouter()
 }
 
+// Define routes that will use handlers in model.go
+func (a *App) initializeRoutes(){
+  a.Router.HandleFunc("/products", a.getProducts).Methods("GET")
+  a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
+  a.Router.HandleFunc("/product/{id:[0-9]+}", a.getProduct).Methods("GET")
+  a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
+  a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
+}
+
 // Starts the application
 func (a *App) Run(addr string) { }
