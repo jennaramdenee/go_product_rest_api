@@ -1,5 +1,5 @@
 ## REST API
 
-Building and testing a REST API using Gorilla mux and Postgres
+Building and testing a REST API using Gorilla mux and Postgres. 
 
-[Tutorial here](https://semaphoreci.com/community/tutorials/building-and-testing-a-rest-api-in-go-with-gorilla-mux-and-postgresql)
+Simple API that implements the ability to create, update, delete and get a product from an underlying database.
